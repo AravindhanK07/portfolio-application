@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useScrolled } from "../hooks/useScrolled";
+import { useTheme } from "../hooks/useTheme";
 import styles from "./Header.module.css";
 
 const NAV_LINKS = [
@@ -11,6 +12,7 @@ const NAV_LINKS = [
 
 export function Header() {
   const scrolled = useScrolled();
+  const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -30,6 +32,13 @@ export function Header() {
         </nav>
 
         <div className={styles.actions}>
+          <button
+            className={styles.themeToggle}
+            onClick={toggle}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           <a href="#cta" className={styles.cta}>
             Get Started
           </a>

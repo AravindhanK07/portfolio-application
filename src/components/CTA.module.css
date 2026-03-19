@@ -26,7 +26,7 @@
   height: 400px;
   background: radial-gradient(
     ellipse at center,
-    rgba(99, 102, 241, 0.12) 0%,
+    var(--color-glow-soft) 0%,
     transparent 60%
   );
   pointer-events: none;
@@ -74,7 +74,7 @@
 .primary:hover {
   background: var(--color-accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 24px var(--color-btn-shadow);
 }
 
 .secondary {

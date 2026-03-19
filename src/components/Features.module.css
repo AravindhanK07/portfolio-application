@@ -55,7 +55,7 @@
 .card:hover {
   border-color: var(--color-border-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px var(--color-shadow);
 }
 
 .iconWrap {
