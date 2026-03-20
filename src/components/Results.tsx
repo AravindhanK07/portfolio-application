@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Check, X, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, RotateCcw, ChevronDown, ChevronUp, Share2 } from "lucide-react";
 import type { Question } from "./questions";
-import type { GameState } from "./Game";
+import type { GameData } from "./Game";
 import styles from "./Results.module.css";
 
 interface ResultsProps {
-  state: GameState;
+  state: GameData;
   questions: Question[];
   onRestart: () => void;
 }
@@ -29,12 +29,22 @@ function getVerdict(score: number, total: number) {
 
 export function Results({ state, questions, onRestart }: ResultsProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const p1 = state.player1Answers || {};
+  const p2 = state.player2Answers || {};
 
   const score = questions.filter(
-    (q) => state.player1Answers[q.id] === state.player2Answers[q.id]
+    (q) => p1[q.id] === p2[q.id]
   ).length;
 
   const verdict = getVerdict(score, questions.length);
+
+  function shareCode() {
+    navigator.clipboard.writeText(state.code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  }
 
   return (
     <div className={styles.container}>
@@ -50,6 +60,13 @@ export function Results({ state, questions, onRestart }: ResultsProps) {
         </p>
       </div>
 
+      {state.code && (
+        <button className={styles.shareBtn} onClick={shareCode}>
+          <Share2 size={14} />
+          {copiedCode ? "Code copied!" : `Share code: ${state.code}`}
+        </button>
+      )}
+
       <button
         className={styles.detailsToggle}
         onClick={() => setShowDetails(!showDetails)}
@@ -61,9 +78,9 @@ export function Results({ state, questions, onRestart }: ResultsProps) {
       {showDetails && (
         <div className={styles.breakdown}>
           {questions.map((q) => {
-            const p1 = state.player1Answers[q.id];
-            const p2 = state.player2Answers[q.id];
-            const match = p1 === p2;
+            const a1 = p1[q.id];
+            const a2 = p2[q.id];
+            const match = a1 === a2;
 
             return (
               <div
@@ -79,11 +96,11 @@ export function Results({ state, questions, onRestart }: ResultsProps) {
                 <div className={styles.itemAnswers}>
                   <div className={styles.answer}>
                     <span className={styles.answerLabel}>{state.player1Name}:</span>
-                    <span>{p1}</span>
+                    <span>{a1}</span>
                   </div>
                   <div className={styles.answer}>
                     <span className={styles.answerLabel}>{state.player2Name}:</span>
-                    <span>{p2}</span>
+                    <span>{a2}</span>
                   </div>
                 </div>
               </div>

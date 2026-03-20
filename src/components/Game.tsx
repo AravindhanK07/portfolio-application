@@ -1,62 +1,134 @@
 import { useState } from "react";
 import { QUESTIONS } from "./questions";
-import { Setup } from "./Setup";
+import { Home } from "./Home";
 import { ChatRound } from "./ChatRound";
-import { Handoff } from "./Handoff";
+import { ShareCode } from "./ShareCode";
+import { JoinGame } from "./JoinGame";
 import { Results } from "./Results";
 import styles from "./Game.module.css";
 
-export type Phase = "setup" | "player1" | "handoff" | "player2" | "results";
+export type Phase = "home" | "player1" | "share" | "join" | "player2" | "results";
 
-export interface GameState {
+export interface GameData {
+  code: string;
   player1Name: string;
   player2Name: string;
   player1Answers: Record<number, string>;
   player2Answers: Record<number, string>;
 }
 
-const INITIAL_STATE: GameState = {
-  player1Name: "",
-  player2Name: "",
-  player1Answers: {},
-  player2Answers: {},
-};
-
 export function Game() {
-  const [phase, setPhase] = useState<Phase>("setup");
-  const [state, setState] = useState<GameState>(INITIAL_STATE);
+  const [phase, setPhase] = useState<Phase>("home");
+  const [data, setData] = useState<GameData>({
+    code: "",
+    player1Name: "",
+    player2Name: "",
+    player1Answers: {},
+    player2Answers: {},
+  });
 
-  function handleSetup(p1: string, p2: string) {
-    setState({ ...INITIAL_STATE, player1Name: p1, player2Name: p2 });
+  async function handleCreate(name: string) {
+    const res = await fetch("/api/game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerName: name }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error);
+    setData((prev) => ({ ...prev, code: json.code, player1Name: name }));
     setPhase("player1");
   }
 
-  function handlePlayer1Done(answers: Record<number, string>) {
-    setState((prev) => ({ ...prev, player1Answers: answers }));
-    setPhase("handoff");
+  async function handlePlayer1Done(answers: Record<number, string>) {
+    await fetch(`/api/game/${data.code}/answers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers }),
+    });
+    setData((prev) => ({ ...prev, player1Answers: answers }));
+    setPhase("share");
   }
 
-  function handleHandoffDone() {
+  async function handleJoin(code: string, name: string) {
+    const res = await fetch(`/api/game/${code}/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerName: name }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error);
+    setData((prev) => ({
+      ...prev,
+      code,
+      player2Name: name,
+      player1Name: json.player1Name,
+    }));
     setPhase("player2");
   }
 
-  function handlePlayer2Done(answers: Record<number, string>) {
-    setState((prev) => ({ ...prev, player2Answers: answers }));
+  async function handlePlayer2Done(answers: Record<number, string>) {
+    await fetch(`/api/game/${data.code}/predict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers }),
+    });
+    setData((prev) => ({ ...prev, player2Answers: answers }));
+
+    // Fetch full game data for results
+    const res = await fetch(`/api/game/${data.code}`);
+    const json = await res.json();
+    setData((prev) => ({
+      ...prev,
+      player1Answers: json.player1Answers,
+      player2Answers: json.player2Answers,
+      player1Name: json.player1Name,
+      player2Name: json.player2Name,
+    }));
     setPhase("results");
   }
 
+  function handleViewResults(code: string) {
+    fetch(`/api/game/${code}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.error) throw new Error(json.error);
+        if (json.status !== "done") throw new Error("Game isn't finished yet!");
+        setData({
+          code,
+          player1Name: json.player1Name,
+          player2Name: json.player2Name,
+          player1Answers: json.player1Answers,
+          player2Answers: json.player2Answers,
+        });
+        setPhase("results");
+      })
+      .catch((err) => alert(err.message));
+  }
+
   function handleRestart() {
-    setState(INITIAL_STATE);
-    setPhase("setup");
+    setData({
+      code: "",
+      player1Name: "",
+      player2Name: "",
+      player1Answers: {},
+      player2Answers: {},
+    });
+    setPhase("home");
   }
 
   return (
     <div className={styles.container}>
-      {phase === "setup" && <Setup onStart={handleSetup} />}
+      {phase === "home" && (
+        <Home
+          onCreate={handleCreate}
+          onJoin={handleJoin}
+          onViewResults={handleViewResults}
+        />
+      )}
 
       {phase === "player1" && (
         <ChatRound
-          playerName={state.player1Name}
+          playerName={data.player1Name}
           questions={QUESTIONS}
           prompt="Answer honestly — let's see if your partner really knows you!"
           questionPrefix=""
@@ -64,27 +136,23 @@ export function Game() {
         />
       )}
 
-      {phase === "handoff" && (
-        <Handoff
-          player1Name={state.player1Name}
-          player2Name={state.player2Name}
-          onReady={handleHandoffDone}
-        />
+      {phase === "share" && (
+        <ShareCode code={data.code} onDone={handleRestart} />
       )}
 
       {phase === "player2" && (
         <ChatRound
-          playerName={state.player2Name}
+          playerName={data.player2Name}
           questions={QUESTIONS}
-          prompt={`Predict what ${state.player1Name} chose for each question!`}
-          questionPrefix={`What do you think ${state.player1Name} picked?`}
+          prompt={`Predict what ${data.player1Name} chose for each question!`}
+          questionPrefix={`What do you think ${data.player1Name} picked?`}
           onDone={handlePlayer2Done}
         />
       )}
 
       {phase === "results" && (
         <Results
-          state={state}
+          state={data}
           questions={QUESTIONS}
           onRestart={handleRestart}
         />
