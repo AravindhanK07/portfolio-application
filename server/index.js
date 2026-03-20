@@ -22,11 +22,55 @@ let db;
 async function initDB() {
   db = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DATABASE_URL?.includes("render.com")
+      ? { rejectUnauthorized: false }
+      : false,
   });
-  // Test connection
   await db.query("SELECT 1");
   console.log("Connected to PostgreSQL");
+
+  // Auto-create and seed table if it doesn't exist
+  const { rows } = await db.query(
+    `SELECT EXISTS (
+      SELECT FROM information_schema.tables WHERE table_name = 'stock_details'
+    )`
+  );
+
+  if (!rows[0].exists) {
+    console.log("Creating stock_details table and seeding data...");
+    await db.query(`
+      CREATE TABLE stock_details (
+        id SERIAL PRIMARY KEY,
+        product_name VARCHAR(100) NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        quantity INT NOT NULL,
+        unit_price DECIMAL(10,2) NOT NULL,
+        supplier VARCHAR(100) NOT NULL,
+        warehouse_location VARCHAR(50) NOT NULL,
+        last_restocked DATE NOT NULL,
+        min_stock_level INT NOT NULL
+      )
+    `);
+    await db.query(`
+      INSERT INTO stock_details (product_name, category, quantity, unit_price, supplier, warehouse_location, last_restocked, min_stock_level) VALUES
+        ('Laptop Dell XPS 15', 'Electronics', 45, 1299.99, 'Dell Technologies', 'Warehouse A', '2026-03-10', 10),
+        ('iPhone 16 Pro', 'Electronics', 120, 999.00, 'Apple Inc', 'Warehouse A', '2026-03-15', 20),
+        ('Samsung Galaxy S25', 'Electronics', 85, 899.00, 'Samsung Corp', 'Warehouse B', '2026-03-12', 15),
+        ('Sony WH-1000XM5', 'Accessories', 200, 349.99, 'Sony Electronics', 'Warehouse A', '2026-02-28', 30),
+        ('Logitech MX Master 3S', 'Accessories', 150, 99.99, 'Logitech', 'Warehouse C', '2026-03-05', 25),
+        ('HP LaserJet Pro', 'Office Equipment', 30, 449.00, 'HP Inc', 'Warehouse B', '2026-01-20', 5),
+        ('Canon EOS R6', 'Photography', 25, 2499.00, 'Canon Inc', 'Warehouse C', '2026-03-01', 5),
+        ('iPad Air M2', 'Electronics', 60, 749.00, 'Apple Inc', 'Warehouse A', '2026-03-18', 10),
+        ('Mechanical Keyboard K8', 'Accessories', 300, 79.99, 'Keychron', 'Warehouse C', '2026-03-08', 50),
+        ('LG UltraWide Monitor', 'Electronics', 40, 599.99, 'LG Electronics', 'Warehouse B', '2026-02-15', 8),
+        ('AirPods Pro 2', 'Accessories', 180, 249.00, 'Apple Inc', 'Warehouse A', '2026-03-14', 30),
+        ('ThinkPad X1 Carbon', 'Electronics', 35, 1449.00, 'Lenovo', 'Warehouse B', '2026-03-02', 10),
+        ('Epson Projector', 'Office Equipment', 15, 799.00, 'Epson', 'Warehouse C', '2026-01-10', 3),
+        ('USB-C Hub 7-in-1', 'Accessories', 500, 39.99, 'Anker', 'Warehouse A', '2026-03-16', 100),
+        ('Standing Desk Frame', 'Office Equipment', 20, 349.00, 'FlexiSpot', 'Warehouse B', '2026-02-20', 5)
+    `);
+    console.log("Table created and seeded with 15 rows");
+  }
 }
 
 async function getTableSchema() {
