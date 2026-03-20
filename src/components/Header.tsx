@@ -1,4 +1,4 @@
-import { Moon, Sun, Database } from "lucide-react";
+import { Moon, Sun, Heart } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import styles from "./Header.module.css";
 
@@ -10,9 +10,9 @@ export function Header() {
       <div className={styles.inner}>
         <div className={styles.logo}>
           <span className={styles.logoMark}>
-            <Database size={16} />
+            <Heart size={16} />
           </span>
-          <span className={styles.logoText}>StockChat AI</span>
+          <span className={styles.logoText}>How Well Do You Know Me?</span>
         </div>
 
         <div className={styles.actions}>
