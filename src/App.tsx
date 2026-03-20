@@ -1,23 +1,13 @@
 import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
-import { Features } from "./components/Features";
-import { Stats } from "./components/Stats";
-import { Testimonials } from "./components/Testimonials";
-import { CTA } from "./components/CTA";
-import { Footer } from "./components/Footer";
+import { ChatWindow } from "./components/ChatWindow";
 
 export function App() {
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Header />
-      <main>
-        <Hero />
-        <Features />
-        <Stats />
-        <Testimonials />
-        <CTA />
+      <main style={{ flex: 1, overflow: "hidden" }}>
+        <ChatWindow />
       </main>
-      <Footer />
-    </>
+    </div>
   );
 }

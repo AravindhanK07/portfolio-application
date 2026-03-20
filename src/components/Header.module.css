@@ -1,14 +1,8 @@
 .header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 100;
-  padding: 1rem 0;
-  transition: var(--transition-base);
-}
-
-.scrolled {
+  padding: 0.75rem 0;
   background: var(--color-header-bg);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
@@ -29,7 +23,7 @@
   gap: 0.625rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
 .logoMark {
@@ -40,8 +34,6 @@
   height: 2rem;
   background: var(--color-accent);
   border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 700;
   color: white;
 }
 
@@ -49,40 +41,10 @@
   color: var(--color-text-primary);
 }
 
-.desktopNav {
-  display: flex;
-  gap: 2rem;
-}
-
-.navLink {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  transition: color var(--transition-fast);
-}
-
-.navLink:hover {
-  color: var(--color-text-primary);
-}
-
 .actions {
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-.cta {
-  padding: 0.5rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: white;
-  background: var(--color-accent);
-  border-radius: 8px;
-  transition: background var(--transition-fast);
-}
-
-.cta:hover {
-  background: var(--color-accent-hover);
 }
 
 .themeToggle {
@@ -101,50 +63,4 @@
   color: var(--color-text-primary);
   border-color: var(--color-border-hover);
   background: var(--color-surface);
-}
-
-.menuBtn {
-  display: none;
-  color: var(--color-text-primary);
-}
-
-.mobileNav {
-  display: none;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem clamp(1rem, 5vw, 2rem);
-  background: var(--color-mobile-bg);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.mobileLink {
-  padding: 0.75rem 0;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border);
-  transition: color var(--transition-fast);
-}
-
-.mobileLink:hover {
-  color: var(--color-text-primary);
-}
-
-@media (max-width: 768px) {
-  .desktopNav {
-    display: none;
-  }
-
-  .cta {
-    display: none;
-  }
-
-  .menuBtn {
-    display: flex;
-  }
-
-  .mobileNav {
-    display: flex;
-  }
 }
