@@ -75,16 +75,16 @@ async function initDB() {
 
 async function getTableSchema() {
   const { rows } = await db.query(
-    `SELECT column_name, data_type, is_nullable,
-       CASE WHEN pk.column_name IS NOT NULL THEN 'PRI' ELSE '' END AS column_key
+    `SELECT c.column_name, c.data_type, c.is_nullable,
+       CASE WHEN pk.pk_column IS NOT NULL THEN 'PRI' ELSE '' END AS column_key
      FROM information_schema.columns c
      LEFT JOIN (
-       SELECT kcu.column_name
+       SELECT kcu.column_name AS pk_column
        FROM information_schema.table_constraints tc
        JOIN information_schema.key_column_usage kcu
          ON tc.constraint_name = kcu.constraint_name
        WHERE tc.table_name = 'stock_details' AND tc.constraint_type = 'PRIMARY KEY'
-     ) pk ON c.column_name = pk.column_name
+     ) pk ON c.column_name = pk.pk_column
      WHERE c.table_name = 'stock_details'
      ORDER BY c.ordinal_position`
   );
