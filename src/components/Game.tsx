@@ -3,11 +3,16 @@ import { QUESTIONS } from "./questions";
 import { Home } from "./Home";
 import { ChatRound } from "./ChatRound";
 import { ShareCode } from "./ShareCode";
-import { JoinGame } from "./JoinGame";
 import { Results } from "./Results";
 import styles from "./Game.module.css";
 
-export type Phase = "home" | "player1" | "share" | "join" | "player2" | "results";
+export type Phase =
+  | "home"
+  | "player1"
+  | "share"
+  | "join"
+  | "player2"
+  | "results";
 
 export interface GameData {
   code: string;
@@ -151,11 +156,7 @@ export function Game() {
       )}
 
       {phase === "results" && (
-        <Results
-          state={data}
-          questions={QUESTIONS}
-          onRestart={handleRestart}
-        />
+        <Results state={data} questions={QUESTIONS} onRestart={handleRestart} />
       )}
     </div>
   );
