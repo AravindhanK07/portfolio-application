@@ -189,7 +189,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Catch-all: serve frontend for any non-API route
-app.get("*", (_req, res) => {
+app.get("/{*splat}", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "dist", "index.html"));
 });
 
